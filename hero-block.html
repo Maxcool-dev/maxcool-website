@@ -1,0 +1,202 @@
+<!-- ============================================================
+   MAXCOOL Hero Block – Copy ทั้งหมดนี้ วางใน WordPress HTML Editor
+   ============================================================ -->
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@200;300;400;500;600&family=IBM+Plex+Sans:wght@200;300;400;500;600;700&display=swap');
+
+.mc-hero-wrap *{box-sizing:border-box;margin:0;padding:0}
+.mc-hero-wrap a{color:inherit;text-decoration:none}
+.mc-hero-wrap .mc-wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+
+/* ---------- buttons ---------- */
+.mc-hero-wrap .btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif;
+  font-size:16px;font-weight:500;
+  padding:13px 26px;border-radius:6px;cursor:pointer;
+  border:1px solid #75aedf;background:#04122d;color:#f3f5f7;
+  transition:.18s ease;white-space:nowrap;
+}
+.mc-hero-wrap .btn:hover{
+  border-color:#a9cdf0;background:#071c48;
+  transform:translateY(-2px);
+  box-shadow:0 0 0 1px rgba(169,205,240,.35),0 6px 22px rgba(117,174,223,.30);
+}
+
+/* ---------- hero ---------- */
+.mc-hero-wrap .hero{position:relative;height:260vh;background:#000;font-family:'IBM Plex Sans Thai','IBM Plex Sans',system-ui,sans-serif}
+.mc-hero-wrap .hero-sticky{position:sticky;top:0;height:100vh;overflow:hidden;background:#000}
+.mc-hero-wrap #mcHeroBg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  background-image:url('https://maxcool.co.th/wp-content/uploads/2026/06/hero-cooler.jpg');
+}
+.mc-hero-wrap #mcHeroCanvas{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity .15s}
+.mc-hero-wrap #mcHeroCanvas.ready{opacity:1}
+.mc-hero-wrap .hero-veil{
+  position:absolute;inset:0;z-index:3;
+  background:linear-gradient(90deg,rgba(15,20,26,.80) 0%,rgba(15,20,26,.46) 42%,rgba(15,20,26,.12) 100%),
+             linear-gradient(0deg,rgba(15,20,26,.72),rgba(15,20,26,0) 44%);
+  opacity:0;transition:opacity .5s;
+}
+.mc-hero-wrap .hero-veil.show{opacity:1}
+.mc-hero-wrap .hero-content{
+  position:absolute;left:0;right:0;bottom:0;z-index:5;
+  padding-bottom:64px;opacity:0;transform:translateY(20px);
+  transition:opacity .6s ease,transform .6s ease;pointer-events:none;
+}
+.mc-hero-wrap .hero-content.show{opacity:1;transform:none;pointer-events:auto}
+.mc-hero-wrap .hero h1{
+  font-family:'IBM Plex Sans','IBM Plex Sans Thai',sans-serif;
+  font-weight:200;
+  font-size:clamp(56px,9vw,128px);line-height:.92;letter-spacing:.06em;
+  color:#fff;margin-bottom:14px;
+}
+.mc-hero-wrap .hero-sub{
+  font-size:clamp(20px,2.6vw,30px);font-weight:300;
+  color:#e6eaef;margin-bottom:34px;
+}
+.mc-hero-wrap .hero-btns{display:flex;gap:16px;flex-wrap:wrap}
+.mc-hero-wrap .hero-scrollhint{
+  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  z-index:8;pointer-events:none;opacity:0;transition:opacity .3s;
+}
+.mc-hero-wrap .hero-scrollhint.show{opacity:1}
+.mc-hero-wrap .hero-scrollhint span{
+  font-family:'IBM Plex Sans',sans-serif;font-size:11px;
+  letter-spacing:.4em;text-transform:uppercase;
+  color:rgba(255,255,255,.42);font-weight:300;
+}
+.mc-hero-wrap .hero-arr{
+  width:16px;height:16px;
+  border-right:1.5px solid rgba(255,255,255,.38);
+  border-bottom:1.5px solid rgba(255,255,255,.38);
+  transform:rotate(45deg);
+  animation:mcHeroBounce 1.8s ease-in-out infinite;
+}
+@keyframes mcHeroBounce{
+  0%,100%{transform:rotate(45deg) translateY(0);opacity:.3}
+  50%{transform:rotate(45deg) translateY(6px);opacity:.9}
+}
+
+/* ---------- responsive ---------- */
+@media(max-width:560px){
+  .mc-hero-wrap .mc-wrap{padding:0 20px}
+  .mc-hero-wrap .hero-btns{flex-direction:column;align-items:flex-start}
+  .mc-hero-wrap .btn{width:100%}
+}
+</style>
+
+<!-- ── Hero HTML ───────────────────────────────────────────── -->
+<div class="mc-hero-wrap">
+  <section class="hero">
+    <div class="hero-sticky">
+      <div id="mcHeroBg"></div>
+      <canvas id="mcHeroCanvas"></canvas>
+      <div class="hero-veil"></div>
+      <div class="hero-content">
+        <div class="mc-wrap">
+          <h1>MAXCOOL</h1>
+          <p class="hero-sub">ผู้เชี่ยวชาญด้าน ตู้ทำน้ำเย็นสแตนเลส</p>
+          <div class="hero-btns">
+            <a href="#products" class="btn">ค้นหารุ่นที่ใช่</a>
+            <a href="#contact"  class="btn">ขอใบเสนอราคา</a>
+          </div>
+        </div>
+      </div>
+      <div class="hero-scrollhint">
+        <span>scroll</span>
+        <div class="hero-arr"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ── Hero JavaScript ────────────────────────────────────── -->
+<script>
+(function(){
+  'use strict';
+
+  var wrap    = document.querySelector('.mc-hero-wrap');
+  var hero    = wrap && wrap.querySelector('.hero');
+  var canvas  = document.getElementById('mcHeroCanvas');
+  var veil    = wrap && wrap.querySelector('.hero-veil');
+  var content = wrap && wrap.querySelector('.hero-content');
+  var hint    = wrap && wrap.querySelector('.hero-scrollhint');
+  if(!hero || !canvas) return;
+
+  var ctx = canvas.getContext('2d');
+  var W, H, fontReady = false;
+
+  /* reduced-motion: skip animation, show content immediately */
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){
+    hero.style.height = '100vh';
+    canvas.style.display = 'none';
+    if(content){ content.classList.add('show'); }
+    if(veil){ veil.classList.add('show'); }
+    return;
+  }
+
+  function resize(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width  = W * dpr; canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function getP(){
+    var maxScroll = hero.offsetHeight - window.innerHeight;
+    return Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
+  }
+
+  var easeInOut = function(t){ return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; };
+  var easeOut   = function(t){ return 1-(1-t)*(1-t); };
+
+  function draw(p){
+    ctx.clearRect(0, 0, W, H);
+    var phase1 = Math.min(p / 0.6, 1);
+    var phase2 = Math.min(Math.max((p - 0.6) / 0.22, 0), 1);
+    var fsStart = Math.min(W, H) * 0.16;
+    var fsEnd   = Math.max(W, H) * 3.6;
+    var fs = fsStart + easeInOut(phase1) * (fsEnd - fsStart);
+    var blackAlpha = Math.max(0, 1 - easeOut(phase2));
+
+    if(blackAlpha > 0.005){
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(0,0,0,' + blackAlpha + ')';
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.font = '700 ' + fs + 'px "IBM Plex Sans"';
+      try{ ctx.letterSpacing = (fs * 0.05) + 'px'; }catch(e){}
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle    = 'rgba(255,255,255,1)';
+      ctx.fillText('MAXCOOL', W/2, H/2);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    var revealed = p >= 0.78;
+    if(content){ content.classList.toggle('show', revealed); }
+    if(veil)   { veil.classList.toggle('show', revealed); }
+    if(hint)   { hint.style.opacity = Math.max(0, 1 - p * 10); }
+  }
+
+  function onScroll(){ if(fontReady) draw(getP()); }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', function(){ resize(); if(fontReady) draw(getP()); });
+
+  function start(){
+    fontReady = true; resize(); draw(getP());
+    canvas.classList.add('ready');
+    if(hint){ hint.classList.add('show'); }
+  }
+
+  document.fonts.load('700 120px "IBM Plex Sans"').then(start)
+    .catch(function(){ document.fonts.ready.then(start); });
+})();
+</script>
