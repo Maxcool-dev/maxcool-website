@@ -1,0 +1,136 @@
+<div class="mxc-tabs">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;600&display=swap');
+
+    .mxc-tabs *{box-sizing:border-box}
+    .mxc-tabs{
+      --mxc-font:"IBM Plex Sans Thai","IBM Plex Sans",system-ui,sans-serif;
+    }
+
+    /* breakout full-width ออกจาก container ของ WordPress theme */
+    .mxc-tabs .sectabs{
+      position:sticky;top:0;z-index:30;
+      /* breakout: ดัน nav ให้เต็ม viewport กว้าง ไม่สนใจ container parent */
+      width:100vw;
+      margin-left:calc(50% - 50vw);
+      background:rgba(25,32,41,.92);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      border-top:1px solid rgba(255,255,255,.08);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      box-shadow:0 8px 28px rgba(0,0,0,.28);
+    }
+    .mxc-tabs .sectabs-inner{
+      display:flex;gap:12px;align-items:center;
+      /* center ทุก breakpoint */
+      justify-content:center;
+      flex-wrap:wrap;
+      padding:13px 32px;
+      /* ป้องกันเนื้อหาใน inner กว้างเกิน */
+      max-width:1180px;
+      margin:0 auto;
+    }
+    .mxc-tabs .stab{
+      display:inline-flex;align-items:center;justify-content:center;gap:11px;
+      font-family:var(--mxc-font);font-size:16px;font-weight:600;line-height:1;
+      text-decoration:none;
+      color:#dfe5ec;
+      padding:13px 28px;border-radius:999px;cursor:pointer;
+      background:#04122d;
+      border:1px solid #75aedf;
+      transition:.18s ease;white-space:nowrap;
+    }
+    .mxc-tabs .stab .nicon{width:36px;height:36px;flex:none;stroke:#fff;stroke-width:1.5;
+      stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .mxc-tabs .stab .nicon .acc{stroke:#4a9eff}
+    .mxc-tabs .stab .nicon .accf{fill:#4a9eff;stroke:none}
+    .mxc-tabs .stab:hover{background:#0a1d40;border-color:#a9cdf0;transform:translateY(-1px)}
+    .mxc-tabs .stab.active{background:#071c48;border-color:#a9cdf0;color:#fff;
+      box-shadow:0 0 0 1px rgba(169,205,240,.35),0 6px 22px rgba(117,174,223,.30)}
+    @media (max-width:560px){
+      .mxc-tabs .sectabs-inner{gap:8px;padding:11px 14px}
+      .mxc-tabs .stab{font-size:14px;padding:10px 16px;gap:8px}
+      .mxc-tabs .stab .nicon{width:28px;height:28px}
+    }
+  </style>
+
+  <nav class="sectabs" aria-label="Section navigation">
+    <div class="sectabs-inner">
+      <a href="#about" class="stab"><svg class="nicon" viewBox="0 0 24 24"><path d="M8.2 13.4 6.7 19.6 7.7 18.6 8.7 19.4 9.6 13.6Z"/><path d="M11.8 13.4 13.3 19.6 12.3 18.6 11.3 19.4 10.4 13.6Z"/><path d="M10.00 4.00 A1.6 1.6 0 0 1 12.70 4.79 A1.6 1.6 0 0 1 14.55 6.92 A1.6 1.6 0 0 1 14.95 9.71 A1.6 1.6 0 0 1 13.78 12.27 A1.6 1.6 0 0 1 11.41 13.80 A1.6 1.6 0 0 1 8.59 13.80 A1.6 1.6 0 0 1 6.22 12.27 A1.6 1.6 0 0 1 5.05 9.71 A1.6 1.6 0 0 1 5.45 6.92 A1.6 1.6 0 0 1 7.30 4.79 A1.6 1.6 0 0 1 10.00 4.00 Z"/><path class="acc" d="M7.6 9.2 9.3 10.9 12.4 7.5"/><path class="accf" d="M17.4 2.2c.22 1.7.85 2.33 2.55 2.55-1.7.22-2.33.85-2.55 2.55-.22-1.7-.85-2.33-2.55-2.55C16.55 4.53 17.18 3.9 17.4 2.2Z"/></svg>Our Expertise</a>
+      <a href="#products" class="stab"><svg class="nicon" viewBox="0 0 24 24"><rect x="7" y="2.4" width="10" height="19.2" rx="2"/><path class="accf" d="M12 4.6c1.25 1.55 2 2.5 2 3.4a2 2 0 0 1-4 0C10 7.1 10.75 6.15 12 4.6Z"/><path d="M7 10.2H17"/><path d="M9.4 11.4 10.4 12.1M9.6 12.1H11.4V13.4H9.6ZM10.5 13.4V14.8"/><path d="M14.6 11.4 13.6 12.1M12.6 12.1H14.4V13.4H12.6ZM13.5 13.4V14.8"/><path d="M9 16.6H15"/></svg>Product</a>
+      <a href="#why" class="stab"><svg class="nicon" viewBox="0 0 24 24"><path d="M12 2.4 20.2 5.4V11.6C20.2 16.7 16.7 20.4 12 22 7.3 20.4 3.8 16.7 3.8 11.6V5.4Z"/><path class="acc" d="M8.2 11.6 10.8 14.2 15.6 9.1"/></svg>Why MAXCOOL</a>
+      <a href="#standards" class="stab"><svg class="nicon" viewBox="0 0 24 24"><path d="M5.8 2.4H13.2L16.8 6V18H5.8Z"/><path d="M13.2 2.4V6H16.8"/><path d="M8 8.4H14.4M8 10.6H14.4M8 12.8H12.4"/><path class="accf" d="M16.70 13.80 A1.00 1.00 0 0 1 18.52 14.39 A1.00 1.00 0 0 1 19.65 15.94 A1.00 1.00 0 0 1 19.65 17.86 A1.00 1.00 0 0 1 18.52 19.41 A1.00 1.00 0 0 1 16.70 20.00 A1.00 1.00 0 0 1 14.88 19.41 A1.00 1.00 0 0 1 13.75 17.86 A1.00 1.00 0 0 1 13.75 15.94 A1.00 1.00 0 0 1 14.88 14.39 A1.00 1.00 0 0 1 16.70 13.80 Z"/><path d="M15.1 16.9 16.2 18 18.3 15.7" style="stroke:#fff;stroke-width:1.6"/></svg>Standard</a>
+      <a href="#service" class="stab"><svg class="nicon" viewBox="0 0 24 24"><path d="M19.4 4.2a3.3 3.3 0 0 1-4.3 4.3L6.2 17.4a1.7 1.7 0 0 1-2.4-2.4l8.9-8.9a3.3 3.3 0 0 1 4.3-4.3l-2.2 2.2.9 2.1 2.1.9Z"/><path class="acc" style="stroke-width:2" d="M4.8 4.8 14.4 14.4"/><path class="acc" style="stroke-width:4.4" d="M15.2 15.2 18.4 18.4"/></svg>Service</a>
+    </div>
+  </nav>
+
+  <script>
+  (function(){
+    var root = document.currentScript ? document.currentScript.closest('.mxc-tabs') : null;
+    if(!root){ var all=document.querySelectorAll('.mxc-tabs'); root=all[all.length-1]; }
+    if(!root) return;
+    var tabs = [].slice.call(root.querySelectorAll('.stab'));
+    if(!tabs.length) return;
+
+    function setActive(tab){ tabs.forEach(function(t){ t.classList.toggle('active', t===tab); }); }
+
+    var lockUntil = 0, forced = null;
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        forced = t; setActive(t); lockUntil = (window.performance?performance.now():Date.now()) + 700;
+      });
+    });
+
+    var map = tabs.map(function(t){
+      var href = t.getAttribute('href') || '';
+      var sec = href.charAt(0)==='#' && href.length>1 ? document.getElementById(href.slice(1)) : null;
+      return { tab:t, sec:sec };
+    }).filter(function(m){ return m.sec; });
+
+    var bar = root.querySelector('.sectabs');
+
+    function getStickyOffset(){
+      /* รวมความสูงของ sticky elements ทั้งหมด (WP admin bar, theme header, nav นี้) */
+      var total = 0;
+      var els = document.querySelectorAll('[style*="position: sticky"],[style*="position:sticky"]');
+      /* fallback: ใช้ getBoundingClientRect ของ bar เอง */
+      if(bar){
+        var r = bar.getBoundingClientRect();
+        /* ถ้า bar ติดอยู่ที่ top แล้ว ให้ใช้ bottom เป็น offset */
+        total = r.bottom + 16;
+      }
+      return total;
+    }
+
+    function now(){ return window.performance?performance.now():Date.now(); }
+
+    function update(){
+      if(!map.length) return;
+      if(now()<lockUntil) return;
+      forced = null;
+      var offset = getStickyOffset();
+      var current = map[0].tab;
+      map.forEach(function(m){
+        var top = m.sec.getBoundingClientRect().top;
+        if(top - offset <= 0) current = m.tab;
+      });
+      if(window.innerHeight+window.scrollY >= document.documentElement.scrollHeight-2){
+        current = map[map.length-1].tab;
+      }
+      setActive(current);
+    }
+
+    if(map.length){
+      var ticking=false;
+      window.addEventListener('scroll', function(){
+        if(forced) setActive(forced);
+        if(!ticking){ ticking=true; requestAnimationFrame(function(){ ticking=false; update(); }); }
+      }, {passive:true});
+      window.addEventListener('resize', update);
+      update();
+    } else {
+      setActive(tabs[0]);
+    }
+  })();
+  </script>
+</div>
