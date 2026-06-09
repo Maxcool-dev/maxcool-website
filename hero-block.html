@@ -149,41 +149,90 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  /*
+   * Use getBoundingClientRect so the progress is correct even when the hero
+   * section is not at the very top of the page (WordPress header, etc.)
+   */
   function getP(){
-    var maxScroll = hero.offsetHeight - window.innerHeight;
-    return Math.min(Math.max(window.scrollY / maxScroll, 0), 1);
+    var rect      = hero.getBoundingClientRect();
+    var maxScroll = hero.offsetHeight - H;
+    if(maxScroll <= 0) return 0;
+    return Math.min(Math.max(-rect.top / maxScroll, 0), 1);
   }
 
   var easeInOut = function(t){ return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; };
   var easeOut   = function(t){ return 1-(1-t)*(1-t); };
+  var norm      = function(v,lo,hi){ var r=(v-lo)/(hi-lo); return r<0?0:r>1?1:r; };
+
+  /*
+   * Phase 1  p 0.00 → 0.38  background image visible only inside MAXCOOL letters
+   *                           black everywhere else; text is fixed display size
+   * Phase 2  p 0.38 → 0.74  text scales up until it fills the whole screen
+   *                           the black overlay fades away as letters grow
+   * Phase 3  p 0.74 → 0.82  canvas is fully transparent — full image fills screen
+   * Phase 4  p 0.82 → 1.00  gradient veil + h1 / subtitle / buttons fade in
+   */
+  var P1_END   = 0.38;
+  var P2_END   = 0.74;
+  var P4_START = 0.82;
+
+  function drawText(fs){
+    /*
+     * Draw MAXCOOL letter-by-letter so we control spacing manually.
+     * This is the only cross-browser way to honour letter-spacing on canvas
+     * (ctx.letterSpacing is not supported in Safari < 17 / Firefox < 112).
+     */
+    var LETTERS  = ['M','A','X','C','O','O','L'];
+    var spacing  = fs * 0.055;
+    ctx.font     = '200 ' + fs + 'px "IBM Plex Sans"';
+
+    var widths = LETTERS.map(function(ch){ return ctx.measureText(ch).width; });
+    var totalW = widths.reduce(function(s,w){ return s+w; }, 0)
+                 + spacing * (LETTERS.length - 1);
+
+    var x = W/2 - totalW/2;
+    LETTERS.forEach(function(ch, i){
+      ctx.fillText(ch, x + widths[i]/2, H/2);
+      x += widths[i] + spacing;
+    });
+  }
 
   function draw(p){
     ctx.clearRect(0, 0, W, H);
-    var phase1 = Math.min(p / 0.6, 1);
-    var phase2 = Math.min(Math.max((p - 0.6) / 0.22, 0), 1);
-    var fsStart = Math.min(W, H) * 0.16;
-    var fsEnd   = Math.max(W, H) * 3.6;
-    var fs = fsStart + easeInOut(phase1) * (fsEnd - fsStart);
-    var blackAlpha = Math.max(0, 1 - easeOut(phase2));
 
-    if(blackAlpha > 0.005){
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = 'rgba(0,0,0,' + blackAlpha + ')';
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.font = '700 ' + fs + 'px "IBM Plex Sans"';
-      try{ ctx.letterSpacing = (fs * 0.05) + 'px'; }catch(e){}
-      ctx.textAlign    = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle    = 'rgba(255,255,255,1)';
-      ctx.fillText('MAXCOOL', W/2, H/2);
-      ctx.globalCompositeOperation = 'source-over';
+    if(p < P2_END + 0.05){
+      /* Black alpha: 1 during Phase 1, eases to 0 across Phase 2 */
+      var blackAlpha = p < P1_END
+        ? 1
+        : 1 - easeOut(norm(p, P1_END, P2_END));
+
+      /* Font size: fixed in Phase 1, grows to cover diagonal in Phase 2 */
+      var fsFixed = Math.min(W, H) * 0.13;
+      var fsFull  = Math.hypot(W, H) * 2.8;
+      var growT   = easeInOut(norm(p, P1_END, P2_END));
+      var fs      = fsFixed + growT * (fsFull - fsFixed);
+
+      if(blackAlpha > 0.004){
+        /* Step 1 — fill black */
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle    = 'rgba(0,0,0,' + blackAlpha + ')';
+        ctx.fillRect(0, 0, W, H);
+
+        /* Step 2 — punch out the text → reveals the bg image through the letters */
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle    = 'rgba(255,255,255,1)';
+        drawText(fs);
+
+        ctx.globalCompositeOperation = 'source-over';
+      }
     }
 
-    var revealed = p >= 0.78;
+    var revealed = p >= P4_START;
     if(content){ content.classList.toggle('show', revealed); }
     if(veil)   { veil.classList.toggle('show', revealed); }
-    if(hint)   { hint.style.opacity = Math.max(0, 1 - p * 10); }
+    if(hint)   { hint.style.opacity = String(Math.max(0, 1 - p * 8)); }
   }
 
   function onScroll(){ if(fontReady) draw(getP()); }
@@ -191,12 +240,16 @@
   window.addEventListener('resize', function(){ resize(); if(fontReady) draw(getP()); });
 
   function start(){
-    fontReady = true; resize(); draw(getP());
+    fontReady = true;
+    resize();
+    draw(getP());
     canvas.classList.add('ready');
     if(hint){ hint.classList.add('show'); }
   }
 
-  document.fonts.load('700 120px "IBM Plex Sans"').then(start)
-    .catch(function(){ document.fonts.ready.then(start); });
+  /* Load weight 200 — matches the CSS h1 font-weight */
+  document.fonts.load('200 120px "IBM Plex Sans"')
+    .then(start)
+    .catch(function(){ document.fonts.ready.then(start).catch(start); });
 })();
 </script>
