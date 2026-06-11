@@ -92,10 +92,18 @@
 
     function setActive(tab){ tabs.forEach(function(t){ t.classList.toggle('active', t===tab); }); }
 
-    /* เพิ่ม lockUntil เป็น 900ms ให้ active ไม่กระตุกหลังคลิก */
     var lockUntil = 0, forced = null;
     tabs.forEach(function(t){
-      t.addEventListener('click', function(){
+      t.addEventListener('click', function(e){
+        e.preventDefault();
+        var href = t.getAttribute('href') || '';
+        var sec = href.charAt(0)==='#' && href.length>1 ? document.getElementById(href.slice(1)) : null;
+        if(sec){
+          /* หักลบความสูง sticky bar ออก + padding 12px */
+          var barH = bar ? bar.getBoundingClientRect().height : 92;
+          var top = sec.getBoundingClientRect().top + window.scrollY - barH - 12;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
         forced = t; setActive(t); lockUntil = (window.performance?performance.now():Date.now()) + 900;
       });
     });
