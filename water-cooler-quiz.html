@@ -1,10 +1,12 @@
 <!-- MAXCOOL — Section แบบสอบถามค้นหารุ่นตู้ทำน้ำเย็น (Product Finder Quiz) -->
 <!-- วางทั้งก้อนใน Elementor "HTML" widget หรือ Gutenberg "Custom HTML" ได้ทันที -->
-<!-- สถาปัตยกรรม: คำถามเป็น HTML จริง (static) มองเห็นแม้ JS ไม่ทำงาน; JS ทำแค่สลับข้อ + คำนวณผลลัพธ์ -->
+<!-- สถาปัตยกรรม: คำถามเป็น HTML จริง (static); กล่องคำถามข้อแรกแสดงจาก CSS ล้วน ไม่พึ่ง JS -->
 <!-- ทุก selector อ้างอิงด้วย class และทำงานแยกกันในแต่ละสำเนา (กันปัญหา id ซ้ำเมื่อ Elementor เรนเดอร์ widget หลายชุด) -->
+<!-- โหลดฟอนต์ Noto Sans Thai ผ่าน <link> (วิธีเดียวกับไฟล์ที่ใช้งานได้จริง) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  /* โหลดฟอนต์ Noto Sans Thai (เลี่ยงแท็ก <link> ที่ wpautop ชอบตัด) */
-  @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap");
   /* ===== 1.1 ตัวแปรสี / ขนาดตัวอักษร (แก้ที่นี่ที่เดียว) ===== */
   .mc-quiz {
     /* ---- ขนาดตัวอักษร (font-size scale ตาม spec) ---- */
@@ -223,19 +225,12 @@
     transform: rotate(45deg) scale(1);
   }
   /* ===== 1.9 การซ่อน/แสดงคำถามทีละข้อ ===== */
-  /* ก่อน JS พร้อม: แสดงทุกข้อ (fallback ให้เนื้อหามองเห็นเสมอแม้ JS ไม่ทำงาน) */
-  .mc-quiz .mc-step + .mc-step {
-    margin-top: 18px;
-  }
-  /* เมื่อ JS พร้อม (root มี class mc-js): แสดงทีละข้อ */
-  .mc-quiz.mc-js .mc-step {
+  /* คุมการแสดงที่ตัวกล่องเอง ไม่พึ่งคลาสจาก JS — กล่องข้อแรก (มี is-active ใน HTML) แสดงจาก CSS ล้วน */
+  .mc-quiz .mc-step {
     display: none;
   }
-  .mc-quiz.mc-js .mc-step.is-active {
+  .mc-quiz .mc-step.is-active {
     display: block;
-  }
-  .mc-quiz.mc-js .mc-step + .mc-step {
-    margin-top: 0;
   }
   /* ===== 1.10 แถวปุ่มควบคุม (ย้อนกลับ / ถัดไป / ดูรุ่นที่แนะนำ) ===== */
   .mc-quiz .mc-nav {
@@ -553,8 +548,6 @@
       return;
     }
     root.setAttribute("data-mc-ready", "1");
-    /* เปิดโหมด JS (CSS จะเริ่มซ่อนคำถามที่ไม่ active) */
-    root.classList.add("mc-js");
     /* ---- อ้างอิง element ภายใน root นี้เท่านั้น ---- */
     var steps = root.querySelectorAll(".mc-step");
     var backBtn = root.querySelector(".mc-back");
