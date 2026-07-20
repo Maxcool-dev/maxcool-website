@@ -1,0 +1,962 @@
+<!--
+  ============================================================================
+  MAXCOOL — Section แบบสอบถามค้นหารุ่นตู้ทำน้ำเย็น (Product Finder Quiz)
+  ----------------------------------------------------------------------------
+  วิธีใช้: คัดลอกทั้งไฟล์นี้ไปวางใน "HTML widget / Custom HTML block" ของ
+           WordPress ได้ทันที — ไม่ต้อง build, ไม่ต้องติดตั้ง framework เพิ่ม
+  โครงสร้าง: CSS + HTML + JS อยู่รวมในไฟล์เดียว, ใช้ได้ทุกขนาดหน้าจอ
+  ============================================================================
+-->
+
+<!-- โหลดฟอนต์ "Noto Sans Thai" จาก Google Fonts (ใช้ทั้ง section) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ========================================================================
+     ส่วนที่ 1: CSS ทั้งหมดของ section (scope อยู่ใต้ #mc-quiz เพื่อกันชน
+     กับสไตล์อื่นของธีม WordPress)
+     ======================================================================== -->
+<style>
+  /* ---------------------------------------------------------------------
+     1.1 ตัวแปรสี / ขนาดตัวอักษร (CSS variables) — แก้ที่นี่ที่เดียวได้เลย
+     --------------------------------------------------------------------- */
+  #mc-quiz {
+    /* ---- ขนาดตัวอักษร (font-size scale ตาม spec) ---- */
+    --fs-h2: clamp(26px, 2.8vw, 40px);
+    --fw-h2: 600;
+    --fs-h3: clamp(18px, 1.75vw, 25px);
+    --fw-h3: 600;
+    --fs-p: clamp(15px, 1.6vw, 23px);
+    --fs-button: clamp(15px, 1.25vw, 18px);
+    --fs-lg: clamp(17px, 1.5vw, 21px);
+    --fs-base: clamp(15px, 1.3vw, 18px);
+    --fs-sm: clamp(13px, 1.1vw, 15px);
+
+    /* ---- สีพื้นหลัง / ตัวอักษร ---- */
+    --color-bg: #011035;
+    --color-btn-bg: #04122d;
+    --color-text: #f3f5f7;
+
+    /* ---- สีขอบกล่องคำถาม ---- */
+    --border-main: #2D66AB;
+    --border-highlight: #7FC1F5;
+    --border-dark-edge: #0A2E5B;
+    --glow: rgba(30, 136, 255, 0.28);
+
+    /* ---- สีวงกลมติ๊กถูกหน้าตัวเลือก ---- */
+    --circle-top: #23CFFF;
+    --circle-center: #168DFF;
+    --circle-bottom: #115CFF;
+    --circle-border: #5FE6FF;
+    --circle-glow: rgba(35, 207, 255, 0.45);
+
+    /* ---- ความหนาขอบ (วงกลม + กล่องตัวเลือก) = 1px ตาม spec ---- */
+    --border-width: 1px;
+
+    /* ---- ฟอนต์หลัก ---- */
+    font-family: "Noto Sans Thai", sans-serif;
+  }
+
+  /* ---------------------------------------------------------------------
+     1.2 กล่อง section หลัก — พื้นหลัง + ความสูงขั้นต่ำ 105vh
+     --------------------------------------------------------------------- */
+  #mc-quiz {
+    box-sizing: border-box;
+    min-height: 105vh;
+    background: var(--color-bg);
+    color: var(--color-text);
+    padding: clamp(28px, 5vw, 72px) clamp(16px, 4vw, 48px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* reset box-sizing ให้ทุก element ภายใน section */
+  #mc-quiz *,
+  #mc-quiz *::before,
+  #mc-quiz *::after {
+    box-sizing: border-box;
+  }
+
+  /* ---------------------------------------------------------------------
+     1.3 หัวเรื่อง (H2) + คำอธิบาย (P) ด้านบนของ section
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-head {
+    width: 100%;
+    max-width: 920px;
+    text-align: center;
+    margin-bottom: clamp(24px, 4vw, 44px);
+  }
+
+  #mc-quiz .mc-head h2 {
+    margin: 0 0 12px 0;
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-h2);
+    line-height: 1.2;
+  }
+
+  #mc-quiz .mc-head p {
+    margin: 0 auto;
+    max-width: 720px;
+    font-size: var(--fs-p);
+    line-height: 1.5;
+    color: #c8d4e6;
+  }
+
+  /* ---------------------------------------------------------------------
+     1.4 กล่องหลักของแบบสอบถาม (container) + ตัวบอกขั้นตอน (progress)
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-shell {
+    width: 100%;
+    max-width: 1180px;
+  }
+
+  /* แถบบอกขั้นตอน "ขั้นตอนที่ X จาก Y" */
+  #mc-quiz .mc-progress {
+    margin-bottom: 14px;
+  }
+
+  #mc-quiz .mc-progress-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: var(--fs-sm);
+    color: #9fb2cc;
+  }
+
+  /* รางของ progress bar (พื้นหลัง) */
+  #mc-quiz .mc-progress-track {
+    display: flex;
+    gap: 10px;
+  }
+
+  /* แต่ละช่วงของ progress bar */
+  #mc-quiz .mc-progress-seg {
+    flex: 1;
+    height: 5px;
+    border-radius: 999px;
+    background: #0a2350;
+    overflow: hidden;
+  }
+
+  /* ช่วงที่ active (ทำถึงแล้ว) — ไล่เฉดฟ้า */
+  #mc-quiz .mc-progress-seg.is-active {
+    background: linear-gradient(90deg, var(--circle-center), var(--circle-top));
+  }
+
+  /* ---------------------------------------------------------------------
+     1.5 การ์ดคำถาม (question card) — ขอบเรืองแสงตาม spec
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-card {
+    margin-top: 22px;
+    padding: clamp(20px, 3vw, 40px);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(6, 22, 55, 0.9), rgba(3, 14, 40, 0.9));
+    /* ขอบหลัก + ขอบเรืองแสง (glow) */
+    border: var(--border-width) solid var(--border-main);
+    box-shadow:
+      0 0 0 1px var(--border-dark-edge),
+      0 0 30px var(--glow),
+      inset 0 0 22px rgba(127, 193, 245, 0.06);
+  }
+
+  /* ---------------------------------------------------------------------
+     1.6 หัวคำถามภายในการ์ด: ป้ายตัวเลข + ข้อความคำถาม (H3) + คำอธิบาย
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-q-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: clamp(16px, 2vw, 24px);
+  }
+
+  /* ป้ายตัวเลขข้อ (วงกลมมีเลข) */
+  #mc-quiz .mc-q-num {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: var(--fs-base);
+    font-weight: 600;
+    color: var(--color-text);
+    background: radial-gradient(circle at 50% 35%, var(--circle-top), var(--circle-center) 55%, var(--circle-bottom));
+    border: var(--border-width) solid var(--circle-border);
+    box-shadow: 0 0 14px var(--circle-glow);
+  }
+
+  /* กล่องข้อความคำถาม + คำอธิบาย */
+  #mc-quiz .mc-q-text h3 {
+    margin: 6px 0 6px 0;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-h3);
+    line-height: 1.35;
+  }
+
+  #mc-quiz .mc-q-text p {
+    margin: 0;
+    font-size: var(--fs-base);
+    line-height: 1.5;
+    color: #b9c8de;
+  }
+
+  /* ---------------------------------------------------------------------
+     1.7 รายการตัวเลือก (choices)
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* กล่องตัวเลือกแต่ละอัน */
+  #mc-quiz .mc-choice {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    text-align: left;
+    padding: clamp(14px, 1.8vw, 20px) clamp(16px, 2vw, 24px);
+    border-radius: 16px;
+    background: var(--color-btn-bg);
+    border: var(--border-width) solid var(--border-dark-edge);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: var(--fs-lg);
+    line-height: 1.4;
+    cursor: pointer;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+
+  /* สถานะ hover / focus ของตัวเลือก */
+  #mc-quiz .mc-choice:hover,
+  #mc-quiz .mc-choice:focus-visible {
+    border-color: var(--border-main);
+    box-shadow: 0 0 16px var(--glow);
+    outline: none;
+  }
+
+  /* สถานะเมื่อถูกเลือก (selected) */
+  #mc-quiz .mc-choice.is-selected {
+    border-color: var(--border-highlight);
+    box-shadow: 0 0 20px var(--glow);
+  }
+
+  /* ---------------------------------------------------------------------
+     1.8 วงกลมติ๊กถูกหน้าตัวเลือก (radio-like indicator)
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-tick {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    /* วงกลมว่าง (ยังไม่เลือก) = ขอบบาง โปร่งใส */
+    border: var(--border-width) solid #3d5680;
+    background: transparent;
+    transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  /* เครื่องหมายติ๊กถูก (ซ่อนไว้ก่อนเมื่อยังไม่เลือก) */
+  #mc-quiz .mc-tick svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+
+  /* เมื่อเลือกแล้ว: วงกลมไล่เฉดฟ้า + เรืองแสง + โชว์ติ๊กถูก */
+  #mc-quiz .mc-choice.is-selected .mc-tick {
+    border-color: var(--circle-border);
+    background: radial-gradient(circle at 50% 30%, var(--circle-top), var(--circle-center) 55%, var(--circle-bottom));
+    box-shadow: 0 0 12px var(--circle-glow);
+  }
+
+  #mc-quiz .mc-choice.is-selected .mc-tick svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ---------------------------------------------------------------------
+     1.9 แถวปุ่มควบคุม (ย้อนกลับ / ถัดไป / ดูรุ่นที่แนะนำ)
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    margin-top: clamp(20px, 3vw, 30px);
+  }
+
+  /* ปุ่มพื้นฐานทุกปุ่ม */
+  #mc-quiz .mc-btn {
+    font-family: inherit;
+    font-size: var(--fs-button);
+    font-weight: 600;
+    padding: 12px clamp(20px, 3vw, 34px);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+  }
+
+  /* ปุ่มรอง (ย้อนกลับ) — โปร่ง มีขอบ */
+  #mc-quiz .mc-btn-ghost {
+    background: transparent;
+    color: var(--color-text);
+    border: var(--border-width) solid var(--border-main);
+  }
+
+  #mc-quiz .mc-btn-ghost:hover {
+    box-shadow: 0 0 14px var(--glow);
+  }
+
+  /* ปุ่มหลัก (ถัดไป / ดูรุ่นที่แนะนำ) — ไล่เฉดฟ้า */
+  #mc-quiz .mc-btn-primary {
+    background: linear-gradient(180deg, var(--circle-center), var(--circle-bottom));
+    color: #ffffff;
+    border: var(--border-width) solid var(--circle-border);
+    box-shadow: 0 0 16px var(--glow);
+  }
+
+  #mc-quiz .mc-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 22px var(--circle-glow);
+  }
+
+  /* ปุ่มที่ยังกดไม่ได้ (disabled) — ยังไม่ได้เลือกคำตอบ */
+  #mc-quiz .mc-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* ซ่อนปุ่มย้อนกลับด้วย visibility เพื่อคงตำแหน่งปุ่มถัดไปไว้ทางขวา */
+  #mc-quiz .mc-btn.is-hidden {
+    visibility: hidden;
+  }
+
+  /* ---------------------------------------------------------------------
+     1.10 การ์ดผลลัพธ์ (recommended model) — รูปซ้าย / ข้อความขวา
+     --------------------------------------------------------------------- */
+  #mc-quiz .mc-result {
+    margin-top: 22px;
+  }
+
+  /* หัวข้อผลลัพธ์ */
+  #mc-quiz .mc-result h3 {
+    margin: 0 0 8px 0;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-h3);
+  }
+
+  #mc-quiz .mc-result > p {
+    margin: 0 0 20px 0;
+    font-size: var(--fs-p);
+    line-height: 1.5;
+    color: #c8d4e6;
+    max-width: 760px;
+  }
+
+  /* กล่องการ์ดผลลัพธ์ (2 คอลัมน์บนจอใหญ่) */
+  #mc-quiz .mc-result-card {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(20px, 3vw, 44px);
+    align-items: center;
+    padding: clamp(18px, 2.5vw, 34px);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(6, 22, 55, 0.9), rgba(3, 14, 40, 0.9));
+    border: var(--border-width) solid var(--border-main);
+    box-shadow:
+      0 0 0 1px var(--border-dark-edge),
+      0 0 30px var(--glow);
+  }
+
+  /* คอนเทนเนอร์รูปตู้ (ฝั่งซ้าย) */
+  #mc-quiz .mc-result-media {
+    border-radius: 16px;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 40%, #0a2a5e, #020c26 70%);
+    aspect-ratio: 4 / 3;
+    display: grid;
+    place-items: center;
+  }
+
+  /* รูปตู้ให้ responsive เต็มกล่อง */
+  #mc-quiz .mc-result-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* ข้อความฝั่งขวา: ชื่อรุ่น + ปุ่ม CTA */
+  #mc-quiz .mc-result-body h4 {
+    margin: 0 0 20px 0;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-h3);
+    line-height: 1.3;
+  }
+
+  /* ปุ่ม "ดูรายละเอียด" */
+  #mc-quiz .mc-cta {
+    display: inline-block;
+    text-decoration: none;
+    font-size: var(--fs-button);
+    font-weight: 600;
+    color: #ffffff;
+    padding: 13px clamp(24px, 3vw, 40px);
+    border-radius: 14px;
+    background: linear-gradient(180deg, var(--circle-center), var(--circle-bottom));
+    border: var(--border-width) solid var(--circle-border);
+    box-shadow: 0 0 16px var(--glow);
+    transition: transform 0.15s ease, box-shadow 0.18s ease;
+  }
+
+  #mc-quiz .mc-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 22px var(--circle-glow);
+  }
+
+  /* ปุ่ม "ตอบใหม่" ใต้การ์ดผลลัพธ์ */
+  #mc-quiz .mc-restart {
+    margin-top: 22px;
+  }
+
+  /* ---------------------------------------------------------------------
+     1.11 utility: ซ่อน element (ใช้สลับ view คำถาม/ผลลัพธ์)
+     --------------------------------------------------------------------- */
+  #mc-quiz [hidden] {
+    display: none !important;
+  }
+
+  /* ---------------------------------------------------------------------
+     1.12 Responsive: แท็บเล็ต / มือถือ
+     --------------------------------------------------------------------- */
+  /* จอ ≤ 720px: การ์ดผลลัพธ์เปลี่ยนเป็นคอลัมน์เดียว (รูปบน / ข้อความล่าง) */
+  @media (max-width: 720px) {
+    #mc-quiz .mc-result-card {
+      grid-template-columns: 1fr;
+    }
+
+    #mc-quiz .mc-result-media {
+      max-width: 360px;
+      margin: 0 auto;
+    }
+  }
+
+  /* จอ ≤ 480px: ปุ่ม nav ขยายเต็มความกว้าง อ่านง่ายบนมือถือ */
+  @media (max-width: 480px) {
+    #mc-quiz .mc-nav {
+      flex-wrap: wrap;
+    }
+
+    #mc-quiz .mc-btn {
+      flex: 1 1 auto;
+      text-align: center;
+    }
+  }
+</style>
+
+<!-- ========================================================================
+     ส่วนที่ 2: โครงสร้าง HTML ของ section
+     ======================================================================== -->
+<section id="mc-quiz" aria-labelledby="mc-quiz-title">
+
+  <!-- 2.1 หัวเรื่อง + คำอธิบายสั้น (SEO-friendly, ประโยคสมบูรณ์) -->
+  <header class="mc-head">
+    <h2 id="mc-quiz-title">ค้นหารุ่นที่ใช่สำหรับคุณ</h2>
+    <p>แบบสอบถามสั้น ๆ ที่จะช่วยคุณเลือกรุ่นตู้ทำน้ำเย็นแบบต่อท่อที่เหมาะกับการใช้งานของคุณ</p>
+  </header>
+
+  <!-- 2.2 เปลือกหลักของแบบสอบถาม -->
+  <div class="mc-shell">
+
+    <!-- 2.2.1 แถบบอกความคืบหน้า (progress) -->
+    <div class="mc-progress" id="mc-progress">
+      <!-- ข้อความ "ขั้นตอนที่ X จาก Y" (อัปเดตด้วย JS) -->
+      <span class="mc-progress-label" id="mc-progress-label">ขั้นตอนที่ 1 จาก 3</span>
+      <!-- รางแบ่ง 3 ช่วง -->
+      <div class="mc-progress-track">
+        <div class="mc-progress-seg is-active" data-seg="0"></div>
+        <div class="mc-progress-seg" data-seg="1"></div>
+        <div class="mc-progress-seg" data-seg="2"></div>
+      </div>
+    </div>
+
+    <!-- 2.2.2 บริเวณสลับได้: การ์ดคำถาม (view คำถาม) -->
+    <div id="mc-question-view">
+      <!-- การ์ดคำถามจะถูก render โดย JS ลงในนี้ -->
+      <div class="mc-card" id="mc-card"></div>
+
+      <!-- แถวปุ่มควบคุม -->
+      <div class="mc-nav">
+        <!-- ปุ่มย้อนกลับ -->
+        <button type="button" class="mc-btn mc-btn-ghost is-hidden" id="mc-back">ย้อนกลับ</button>
+        <!-- ปุ่มถัดไป / ดูรุ่นที่แนะนำ -->
+        <button type="button" class="mc-btn mc-btn-primary" id="mc-next" disabled>ถัดไป</button>
+      </div>
+    </div>
+
+    <!-- 2.2.3 บริเวณสลับได้: การ์ดผลลัพธ์ (view ผลลัพธ์) — ซ่อนไว้ก่อน -->
+    <div id="mc-result-view" hidden>
+      <div class="mc-result">
+        <h3>รุ่นที่แนะนำสำหรับคุณ</h3>
+        <p>จากคำตอบของคุณ นี่คือรุ่นตู้ทำน้ำเย็นแบบต่อท่อที่เหมาะกับหน้างานของคุณมากที่สุด</p>
+
+        <!-- การ์ดรุ่น: รูปฝั่งซ้าย / ข้อความ + CTA ฝั่งขวา -->
+        <div class="mc-result-card">
+          <!-- คอนเทนเนอร์รูปตู้ (ฝั่งซ้าย) -->
+          <div class="mc-result-media">
+            <!-- รูปตู้: แก้ค่า src ให้เป็น URL รูปจริงของแต่ละรุ่นภายหลังได้
+                 alt จะถูกอัปเดตด้วย JS ให้ตรงชื่อรุ่นเพื่อ SEO / accessibility -->
+            <img id="mc-result-img" src="" alt="ภาพตู้ทำน้ำเย็นแบบต่อท่อของ MAXCOOL" loading="lazy">
+          </div>
+          <!-- ข้อความฝั่งขวา -->
+          <div class="mc-result-body">
+            <!-- ชื่อรุ่น (อัปเดตด้วย JS) -->
+            <h4 id="mc-result-title">—</h4>
+            <!-- ปุ่ม CTA ดูรายละเอียด (href อัปเดตด้วย JS) -->
+            <a class="mc-cta" id="mc-result-cta" href="#">ดูรายละเอียด</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ปุ่มตอบใหม่ (กลับไปเริ่มข้อ 1) -->
+      <div class="mc-restart">
+        <button type="button" class="mc-btn mc-btn-ghost" id="mc-restart">ตอบใหม่</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========================================================================
+     ส่วนที่ 3: JavaScript ทั้งหมด (ตรรกะแบบสอบถาม + การแสดงผล)
+     ======================================================================== -->
+<script>
+(function () {
+  "use strict";
+
+  /* --------------------------------------------------------------------
+     3.1 ค่าคงที่: ฐาน URL ของหน้า configurator
+     ⚠️ TODO (งานตรวจสอบแยกต่างหาก):
+        ต้องยืนยันว่าหน้า configurator นี้อ่าน query param `config` จริง
+        อย่าสมมติเองว่ารองรับอยู่แล้ว
+     -------------------------------------------------------------------- */
+  var CONFIGURATOR_BASE = "/products/water-dispenser";
+
+  /* --------------------------------------------------------------------
+     3.2 PIPE_ROUTES — ผลลัพธ์ของสาย "ต่อท่อน้ำประปาโดยตรง"
+         (Q1 เลือกต่อท่อ → จบทันที ไม่ถาม Q2 / Q3)
+     -------------------------------------------------------------------- */
+  var PIPE_ROUTES = {
+    // สายต่อท่อมีผลลัพธ์เดียว
+    direct: {
+      title: "ตู้ทำน้ำเย็นแบบต่อท่อ",
+      alt: "ตู้ทำน้ำเย็นแบบต่อท่อน้ำประปาโดยตรงของ MAXCOOL",
+      image: "",              // ใส่ URL รูปจริงภายหลัง
+      config: "pipe-direct"   // slug ของหน้า configurator
+    }
+  };
+
+  /* --------------------------------------------------------------------
+     3.3 TANK_ROUTES — ผลลัพธ์ของสาย "เติมน้ำเอง" (5 รุ่นตามตารางบรีฟ)
+         key = <ประเภทน้ำ>|<ระบบระบายความร้อน>
+         (สาย hot ไม่มีระบบระบายความร้อน จึงใช้ key = "hot")
+     ⚠️ slug ด้านล่างเป็น PLACEHOLDER — จะส่ง slug จริงให้แก้ทีหลัง
+     -------------------------------------------------------------------- */
+  var TANK_ROUTES = {
+    // #1 น้ำเย็น + แผงร้อน
+    "cold|radiator": {
+      title: "ตู้ทำน้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยแผงร้อน",
+      alt: "ตู้ทำน้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยแผงร้อนของ MAXCOOL",
+      image: "",
+      config: "tank-cold-radiator"      // PLACEHOLDER
+    },
+    // #2 น้ำเย็น + รังผึ้ง
+    "cold|honeycomb": {
+      title: "ตู้ทำน้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยรังผึ้ง",
+      alt: "ตู้ทำน้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยรังผึ้งของ MAXCOOL",
+      image: "",
+      config: "tank-cold-honeycomb"     // PLACEHOLDER
+    },
+    // #3 ร้อน-เย็น + รังผึ้ง
+    "hotcold|honeycomb": {
+      title: "ตู้ทำน้ำร้อน-น้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยรังผึ้ง",
+      alt: "ตู้ทำน้ำร้อน-น้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยรังผึ้งของ MAXCOOL",
+      image: "",
+      config: "tank-hotcold-honeycomb"  // PLACEHOLDER
+    },
+    // #4 ร้อน-เย็น + แผงร้อน
+    "hotcold|radiator": {
+      title: "ตู้ทำน้ำร้อน-น้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยแผงร้อน",
+      alt: "ตู้ทำน้ำร้อน-น้ำเย็นแบบเติมน้ำ ระบายความร้อนด้วยแผงร้อนของ MAXCOOL",
+      image: "",
+      config: "tank-hotcold-radiator"   // PLACEHOLDER
+    },
+    // #5 น้ำร้อนอย่างเดียว (ไม่ถาม Q3)
+    "hot": {
+      title: "ตู้ทำน้ำร้อนแบบเติมน้ำ",
+      alt: "ตู้ทำน้ำร้อนแบบเติมน้ำของ MAXCOOL",
+      image: "",
+      config: "tank-hot"                // PLACEHOLDER
+    }
+  };
+
+  /* --------------------------------------------------------------------
+     3.4 นิยามคำถามทั้งหมด (id, ข้อความ, คำอธิบาย, ตัวเลือก)
+         แต่ละตัวเลือกมี `value` (ใช้เก็บคำตอบ) และข้อความที่แสดง
+     -------------------------------------------------------------------- */
+  var QUESTIONS = {
+    // ---- คำถามข้อ 1: รูปแบบการติดตั้ง ----
+    q1: {
+      title: "คุณต้องการติดตั้งตู้แบบไหน",
+      desc: "เลือกวิธีติดตั้งที่ตรงกับหน้างานของคุณ เพื่อให้เราแนะนำรุ่นได้ถูกต้อง",
+      choices: [
+        { value: "tank", label: "ติดตั้งง่าย ไม่ต้องเดินท่อน้ำประปา (เติมน้ำเอง)" },
+        { value: "pipe", label: "ต่อท่อน้ำประปาโดยตรง" }
+      ]
+    },
+    // ---- คำถามข้อ 2: ประเภทน้ำ ----
+    q2: {
+      title: "เลือกประเภทน้ำที่ต้องการ",
+      desc: "รุ่นตู้แต่ละแบบรองรับประเภทน้ำต่างกัน เลือกให้ตรงกับการใช้งานจริงของคุณ",
+      choices: [
+        { value: "cold", label: "น้ำเย็น" },
+        { value: "hot", label: "น้ำร้อน" },
+        { value: "hotcold", label: "รวมน้ำร้อนและน้ำเย็น" }
+      ]
+    },
+    // ---- คำถามข้อ 3: สภาพแวดล้อม → ระบบระบายความร้อน ----
+    q3: {
+      title: "พิจารณาสภาพแวดล้อมการติดตั้ง",
+      desc: "สภาพแวดล้อมหน้างานเป็นตัวกำหนดชนิดของระบบระบายความร้อนที่เหมาะสม เพื่อให้ตู้ทำงานได้เต็มประสิทธิภาพและดูแลรักษาง่ายในระยะยาว",
+      choices: [
+        { value: "radiator", label: "พื้นที่มีฝุ่นเยอะ ต้องการรุ่นที่ดูแลรักษาง่าย (ระบายความร้อนด้วยแผงร้อน)" },
+        { value: "honeycomb", label: "จุดที่มีคนใช้งานเยอะ รองรับการใช้งานหนักและต่อเนื่อง (ระบายความร้อนด้วยรังผึ้ง)" }
+      ]
+    }
+  };
+
+  /* --------------------------------------------------------------------
+     3.5 สถานะแบบสอบถาม (state) — เก็บลำดับข้อและคำตอบ
+     -------------------------------------------------------------------- */
+  var state = {
+    // ลำดับข้อที่จะแสดง (คำนวณใหม่ทุกครั้งที่ตอบ เพราะ flow มีกิ่งซ่อน)
+    steps: ["q1"],
+    // index ของข้อปัจจุบันใน steps
+    current: 0,
+    // คำตอบที่เลือก { q1: "tank", q2: "cold", ... }
+    answers: {}
+  };
+
+  /* --------------------------------------------------------------------
+     3.6 อ้างอิง element ต่าง ๆ ใน DOM (cache ไว้ใช้ซ้ำ)
+     -------------------------------------------------------------------- */
+  var elCard = document.getElementById("mc-card");
+  var elBack = document.getElementById("mc-back");
+  var elNext = document.getElementById("mc-next");
+  var elRestart = document.getElementById("mc-restart");
+  var elProgressLabel = document.getElementById("mc-progress-label");
+  var elProgressSegs = document.querySelectorAll("#mc-progress .mc-progress-seg");
+  var elQuestionView = document.getElementById("mc-question-view");
+  var elResultView = document.getElementById("mc-result-view");
+  var elResultImg = document.getElementById("mc-result-img");
+  var elResultTitle = document.getElementById("mc-result-title");
+  var elResultCta = document.getElementById("mc-result-cta");
+
+  /* --------------------------------------------------------------------
+     3.7 คำนวณลำดับข้อ (steps) ใหม่จากคำตอบปัจจุบัน
+         - Q1 = pipe → จบที่ Q1 (ไม่มี Q2/Q3)
+         - Q2 = hot  → จบที่ Q2 (ข้าม Q3)
+         - อื่น ๆ    → q1 → q2 → q3
+     -------------------------------------------------------------------- */
+  function computeSteps() {
+    // เริ่มด้วยข้อ 1 เสมอ
+    var steps = ["q1"];
+
+    // ถ้ายังไม่ตอบข้อ 1 หรือเลือกต่อท่อ → จบแค่ข้อ 1
+    if (state.answers.q1 !== "tank") {
+      return steps;
+    }
+
+    // เลือกเติมน้ำเอง → มีข้อ 2 ต่อ
+    steps.push("q2");
+
+    // ถ้ายังไม่ตอบข้อ 2 หรือเลือกน้ำร้อน → จบแค่ข้อ 2 (ข้าม Q3)
+    if (state.answers.q2 !== "cold" && state.answers.q2 !== "hotcold") {
+      return steps;
+    }
+
+    // น้ำเย็น หรือ ร้อน-เย็น → มีข้อ 3 ต่อ
+    steps.push("q3");
+    return steps;
+  }
+
+  /* --------------------------------------------------------------------
+     3.8 ตรวจว่าตอบครบพอที่จะออกผลลัพธ์ได้แล้วหรือยัง
+         (คือ ข้อปัจจุบันเป็นข้อสุดท้ายที่เป็น "จุดจบ" ของกิ่งนั้น)
+     -------------------------------------------------------------------- */
+  function isTerminalStep(stepId) {
+    // pipe จบที่ q1
+    if (stepId === "q1" && state.answers.q1 === "pipe") {
+      return true;
+    }
+    // hot จบที่ q2
+    if (stepId === "q2" && state.answers.q2 === "hot") {
+      return true;
+    }
+    // q3 เป็นข้อสุดท้ายเสมอ
+    if (stepId === "q3") {
+      return true;
+    }
+    return false;
+  }
+
+  /* --------------------------------------------------------------------
+     3.9 render การ์ดคำถามของข้อปัจจุบัน
+     -------------------------------------------------------------------- */
+  function renderQuestion() {
+    // หา id ของข้อปัจจุบัน
+    var stepId = state.steps[state.current];
+    var q = QUESTIONS[stepId];
+    // ค่าที่เคยเลือกไว้ของข้อนี้ (ถ้ามี)
+    var chosen = state.answers[stepId];
+
+    // สร้าง HTML หัวคำถาม (เลขข้อ + ข้อความ + คำอธิบาย)
+    var html = "";
+    html += '<div class="mc-q-head">';
+    html += '  <span class="mc-q-num" aria-hidden="true">' + (state.current + 1) + "</span>";
+    html += '  <div class="mc-q-text">';
+    html += "    <h3>" + q.title + "</h3>";
+    html += "    <p>" + q.desc + "</p>";
+    html += "  </div>";
+    html += "</div>";
+
+    // สร้างรายการตัวเลือก
+    html += '<div class="mc-choices" role="radiogroup" aria-label="' + q.title + '">';
+    for (var i = 0; i < q.choices.length; i++) {
+      var c = q.choices[i];
+      // เพิ่มคลาส is-selected ถ้าตรงกับคำตอบเดิม
+      var selCls = chosen === c.value ? " is-selected" : "";
+      var checkedAttr = chosen === c.value ? 'aria-checked="true"' : 'aria-checked="false"';
+      html += '<button type="button" class="mc-choice' + selCls + '" role="radio" ' + checkedAttr + ' data-value="' + c.value + '">';
+      // วงกลมติ๊กถูกหน้าตัวเลือก
+      html += '  <span class="mc-tick" aria-hidden="true">';
+      html += '    <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      html += "  </span>";
+      // ข้อความตัวเลือก
+      html += "  <span>" + c.label + "</span>";
+      html += "</button>";
+    }
+    html += "</div>";
+
+    // ใส่ลงในการ์ด
+    elCard.innerHTML = html;
+
+    // ผูก event ให้ปุ่มตัวเลือกทุกอัน
+    var choiceButtons = elCard.querySelectorAll(".mc-choice");
+    for (var j = 0; j < choiceButtons.length; j++) {
+      choiceButtons[j].addEventListener("click", onChoiceClick);
+    }
+
+    // อัปเดตปุ่มควบคุมและ progress
+    updateNavAndProgress();
+  }
+
+  /* --------------------------------------------------------------------
+     3.10 เมื่อคลิกตัวเลือก: บันทึกคำตอบ + คำนวณ steps ใหม่
+     -------------------------------------------------------------------- */
+  function onChoiceClick(e) {
+    var stepId = state.steps[state.current];
+    var value = e.currentTarget.getAttribute("data-value");
+
+    // บันทึกคำตอบข้อนี้
+    state.answers[stepId] = value;
+
+    // ล้างคำตอบของข้อที่อยู่ "หลัง" ข้อนี้ (เพราะกิ่งอาจเปลี่ยน)
+    clearAnswersAfter(state.current);
+
+    // คำนวณลำดับข้อใหม่ (เผื่อ flow เปลี่ยนกิ่ง)
+    state.steps = computeSteps();
+
+    // อัปเดต UI: ทำเครื่องหมายตัวเลือกที่เลือก + เปิดปุ่มถัดไป
+    var choiceButtons = elCard.querySelectorAll(".mc-choice");
+    for (var i = 0; i < choiceButtons.length; i++) {
+      var isSel = choiceButtons[i] === e.currentTarget;
+      choiceButtons[i].classList.toggle("is-selected", isSel);
+      choiceButtons[i].setAttribute("aria-checked", isSel ? "true" : "false");
+    }
+
+    // เปิดปุ่มถัดไป/ดูผล
+    updateNavAndProgress();
+  }
+
+  /* --------------------------------------------------------------------
+     3.11 ล้างคำตอบของทุกข้อที่อยู่หลัง index ที่กำหนด
+          (กันคำตอบเก่าค้างเมื่อผู้ใช้ย้อนกลับไปเปลี่ยนกิ่ง)
+     -------------------------------------------------------------------- */
+  function clearAnswersAfter(index) {
+    // ลบคำตอบของข้อถัด ๆ ไปทั้งหมดใน steps เดิม
+    for (var i = index + 1; i < state.steps.length; i++) {
+      delete state.answers[state.steps[i]];
+    }
+  }
+
+  /* --------------------------------------------------------------------
+     3.12 อัปเดตปุ่มควบคุม (ย้อนกลับ/ถัดไป) + แถบ progress
+     -------------------------------------------------------------------- */
+  function updateNavAndProgress() {
+    var stepId = state.steps[state.current];
+    var answered = !!state.answers[stepId];
+
+    // ---- ปุ่มย้อนกลับ: โชว์เมื่อไม่ใช่ข้อแรก ----
+    if (state.current > 0) {
+      elBack.classList.remove("is-hidden");
+    } else {
+      elBack.classList.add("is-hidden");
+    }
+
+    // ---- ปุ่มถัดไป: เปิดได้ต่อเมื่อเลือกคำตอบแล้ว ----
+    elNext.disabled = !answered;
+
+    // ---- ข้อความปุ่มถัดไป: ถ้าข้อนี้เป็นจุดจบ → "ดูรุ่นที่แนะนำ" ----
+    if (isTerminalStep(stepId)) {
+      elNext.textContent = "ดูรุ่นที่แนะนำ";
+    } else {
+      elNext.textContent = "ถัดไป";
+    }
+
+    // ---- แถบ progress: จำนวนช่วง active = ตำแหน่งข้อปัจจุบัน ----
+    // ป้ายข้อความ "ขั้นตอนที่ X จาก Y" (Y = จำนวนข้อในกิ่งปัจจุบัน)
+    var total = state.steps.length;
+    elProgressLabel.textContent = "ขั้นตอนที่ " + (state.current + 1) + " จาก " + total;
+    // ทำเครื่องหมายช่วงที่ทำถึงแล้ว
+    for (var i = 0; i < elProgressSegs.length; i++) {
+      var active = i <= state.current && i < total;
+      elProgressSegs[i].classList.toggle("is-active", active);
+    }
+  }
+
+  /* --------------------------------------------------------------------
+     3.13 ปุ่มถัดไป / ดูรุ่นที่แนะนำ
+     -------------------------------------------------------------------- */
+  function onNext() {
+    var stepId = state.steps[state.current];
+
+    // ยังไม่เลือกคำตอบ → ไม่ทำอะไร (ปุ่มควรถูก disable อยู่แล้ว)
+    if (!state.answers[stepId]) {
+      return;
+    }
+
+    // ถ้าข้อนี้เป็นจุดจบของกิ่ง → แสดงผลลัพธ์
+    if (isTerminalStep(stepId)) {
+      showResult();
+      return;
+    }
+
+    // ไม่งั้น ไปข้อถัดไป
+    state.current += 1;
+    renderQuestion();
+  }
+
+  /* --------------------------------------------------------------------
+     3.14 ปุ่มย้อนกลับ
+     -------------------------------------------------------------------- */
+  function onBack() {
+    // ถ้าไม่ใช่ข้อแรก ถอยกลับ 1 ข้อ
+    if (state.current > 0) {
+      state.current -= 1;
+      renderQuestion();
+    }
+  }
+
+  /* --------------------------------------------------------------------
+     3.15 หา route ผลลัพธ์จากคำตอบทั้งหมด
+     -------------------------------------------------------------------- */
+  function resolveRoute() {
+    // สาย pipe → PIPE_ROUTES
+    if (state.answers.q1 === "pipe") {
+      return PIPE_ROUTES.direct;
+    }
+
+    // สาย tank (เติมน้ำเอง)
+    var water = state.answers.q2;
+
+    // น้ำร้อนอย่างเดียว → #5
+    if (water === "hot") {
+      return TANK_ROUTES["hot"];
+    }
+
+    // น้ำเย็น หรือ ร้อน-เย็น → รวมกับระบบระบายความร้อน (Q3)
+    var cooling = state.answers.q3;
+    var key = water + "|" + cooling;
+    return TANK_ROUTES[key];
+  }
+
+  /* --------------------------------------------------------------------
+     3.16 แสดงการ์ดผลลัพธ์ (ซ่อนคำถาม → โชว์ผลลัพธ์ตำแหน่งเดิม)
+     -------------------------------------------------------------------- */
+  function showResult() {
+    var route = resolveRoute();
+
+    // กันกรณีหา route ไม่เจอ (ไม่ควรเกิดถ้า logic ถูก)
+    if (!route) {
+      return;
+    }
+
+    // ตั้งค่าชื่อรุ่น
+    elResultTitle.textContent = route.title;
+
+    // ตั้งค่ารูป + alt (ถ้ายังไม่มี URL รูป จะเว้น src ไว้)
+    if (route.image) {
+      elResultImg.setAttribute("src", route.image);
+    } else {
+      elResultImg.removeAttribute("src");
+    }
+    elResultImg.setAttribute("alt", route.alt);
+
+    // สร้าง href ของ CTA ชี้ไปหน้า configurator พร้อม query param config
+    var href = CONFIGURATOR_BASE + "?config=" + encodeURIComponent(route.config);
+    elResultCta.setAttribute("href", href);
+
+    // ซ่อน view คำถาม + แถบ progress, แล้วโชว์ view ผลลัพธ์
+    elQuestionView.setAttribute("hidden", "");
+    document.getElementById("mc-progress").setAttribute("hidden", "");
+    elResultView.removeAttribute("hidden");
+  }
+
+  /* --------------------------------------------------------------------
+     3.17 ปุ่มตอบใหม่ — รีเซ็ตทุกอย่างกลับไปข้อ 1
+     -------------------------------------------------------------------- */
+  function onRestart() {
+    // ล้าง state
+    state.steps = ["q1"];
+    state.current = 0;
+    state.answers = {};
+
+    // ซ่อนผลลัพธ์ → โชว์คำถาม + progress อีกครั้ง
+    elResultView.setAttribute("hidden", "");
+    elQuestionView.removeAttribute("hidden");
+    document.getElementById("mc-progress").removeAttribute("hidden");
+
+    // render ข้อ 1 ใหม่
+    renderQuestion();
+  }
+
+  /* --------------------------------------------------------------------
+     3.18 ผูก event ปุ่มควบคุม + เริ่มต้นแสดงข้อ 1
+     -------------------------------------------------------------------- */
+  elNext.addEventListener("click", onNext);
+  elBack.addEventListener("click", onBack);
+  elRestart.addEventListener("click", onRestart);
+
+  // เริ่มต้น render คำถามข้อแรก
+  renderQuestion();
+})();
+</script>
